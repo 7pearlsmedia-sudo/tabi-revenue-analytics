@@ -1,0 +1,39 @@
+name: tabi_revenue_analytics
+version: "1.0.0"
+config-version: 2
+profile: tabi_revenue_analytics
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+analysis-paths: ["analyses"]
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+vars:
+  # Number of most recent complete weeks held out to evaluate the forecast.
+  forecast_holdout_weeks: 12
+  # Number of weeks forecast beyond the end of the data.
+  forecast_horizon_weeks: 12
+  # Trailing window (weeks) used to estimate year-over-year growth.
+  forecast_growth_window_weeks: 12
+
+models:
+  tabi_revenue_analytics:
+    +persist_docs:
+      relation: true
+      columns: true
+    staging:
+      +materialized: view
+      +schema: staging
+    intermediate:
+      +materialized: table
+      +schema: intermediate
+    marts:
+      +materialized: table
+      +schema: marts
+
+seeds:
+  tabi_revenue_analytics:
+    +schema: reference

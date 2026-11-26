@@ -1,0 +1,42 @@
+version: 2
+
+seeds:
+  - name: non_merchandise_codes
+    description: >
+      Stock codes in Online Retail II that are not physical products (postage,
+      fees, accounting adjustments, manual entries, vouchers, tests). Curated by
+      hand from a full scan of non-numeric stock codes. Lines with these codes
+      are excluded from product, customer and revenue analytics.
+    config:
+      column_types:
+        stock_code: varchar
+        category: varchar
+        note: varchar
+    columns:
+      - name: stock_code
+        data_tests: [unique, not_null]
+      - name: category
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [shipping, manual, discount, sample, adjustment, fee, test, voucher]
+
+  - name: country_regions
+    description: >
+      Maps the source's country labels to a display name and a market region.
+      "European Union" uses EU membership at the time of the data (2009-2011).
+    config:
+      column_types:
+        country: varchar
+        country_name: varchar
+        region: varchar
+    columns:
+      - name: country
+        data_tests: [unique, not_null]
+      - name: region
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [United Kingdom, European Union, Rest of Europe, Rest of world, Unspecified]

@@ -1,0 +1,153 @@
+version: 2
+
+models:
+  - name: mart_monthly_kpis
+    description: Monthly revenue, returns, orders and customers (complete months only).
+    columns:
+      - name: month
+        data_tests: [unique, not_null]
+      - name: gross_sales_gbp
+      - name: returns_gbp
+        description: Value of cancelled product lines dated in the month.
+      - name: net_revenue_gbp
+        data_tests: [not_null]
+      - name: return_rate
+        description: returns / gross sales.
+      - name: orders
+      - name: avg_order_value_gbp
+      - name: active_customers
+        description: Identified customers with at least one order in the month.
+      - name: new_customers
+        description: Identified customers whose first order in the data falls in the month.
+      - name: returning_customers
+      - name: identified_sales_share
+        description: Share of gross sales from orders with a customer id.
+
+  - name: mart_country_performance
+    description: >
+      Revenue and returns by country over the full period, plus net revenue for
+      two comparable 12-month periods (FY1 = Dec 2009-Nov 2010, FY2 = Dec 2010-Nov 2011).
+    columns:
+      - name: country
+        data_tests: [unique, not_null]
+      - name: region
+        data_tests: [not_null]
+      - name: share_of_net_revenue
+      - name: return_rate
+      - name: yoy_growth
+        description: FY2 / FY1 - 1 (null when FY1 revenue is zero or negative).
+
+  - name: mart_product_performance
+    description: Revenue, returns and reach per product with a revenue rank and ABC class.
+    columns:
+      - name: stock_code
+        data_tests: [unique, not_null]
+      - name: description
+        description: Most frequent description used for the stock code.
+      - name: revenue_rank
+        data_tests: [unique, not_null]
+      - name: cumulative_revenue_share
+      - name: abc_class
+        description: A = products making the first 80% of net revenue, B = next 15%, C = the rest.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [A, B, C]
+
+  - name: mart_customer_rfm
+    description: RFM scores, segment and loyalty score per identified customer.
+    columns:
+      - name: customer_id
+        data_tests: [unique, not_null]
+      - name: recency_days
+        data_tests: [not_null]
+      - name: frequency
+        data_tests: [not_null]
+      - name: monetary_gbp
+        data_tests: [not_null]
+      - name: r_score
+        data_tests: &score_test
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4, 5]
+                quote: false
+      - name: f_score
+        data_tests: *score_test
+      - name: m_score
+        data_tests: *score_test
+      - name: fm_score
+        data_tests: *score_test
+      - name: loyalty_score
+        description: Mean percentile rank of R, F and M, scaled 0-100.
+        data_tests: [not_null]
+      - name: rfm_segment
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [Champions, Loyal customers, Potential loyalists, New customers, Promising,
+                         Need attention, About to sleep, Cannot lose them, At risk, Hibernating, Lost]
+
+  - name: mart_rfm_segments
+    description: Size and value of each RFM segment.
+    columns:
+      - name: rfm_segment
+        data_tests: [unique, not_null]
+
+  - name: mart_cohort_retention
+    description: >
+      Monthly acquisition cohorts x months since first order. The first cohort
+      (Dec 2009) is left-censored and flagged.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [cohort_month, months_since_first_order]
+    columns:
+      - name: cohort_month
+        data_tests: [not_null]
+      - name: months_since_first_order
+        data_tests: [not_null]
+      - name: retention_rate
+        data_tests: [not_null]
+      - name: is_left_censored_cohort
+
+  - name: mart_weekly_revenue
+    description: Net merchandise revenue per complete Monday-Sunday week, gap-free.
+    columns:
+      - name: week_start
+        data_tests: [unique, not_null]
+      - name: net_revenue_gbp
+        data_tests: [not_null]
+
+  - name: mart_forecast_weekly
+    description: >
+      Training actuals, holdout actuals with out-of-sample forecasts, and future
+      forecasts for four baseline methods.
+    columns:
+      - name: split
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [train, holdout, future]
+      - name: week_start
+        data_tests: [not_null]
+      - name: horizon_weeks
+        description: Weeks ahead of the forecast origin (null for training rows).
+
+  - name: mart_forecast_accuracy
+    description: Holdout MAE, WAPE and bias per forecast method, ranked by WAPE.
+    columns:
+      - name: method
+        data_tests: [unique, not_null]
+      - name: wape
+        data_tests: [not_null]
+      - name: accuracy_rank
+        data_tests: [unique, not_null]
+
+  - name: mart_data_quality
+    description: Line counts and amounts for each cleaning step.
+    columns:
+      - name: step
+        data_tests: [unique, not_null]

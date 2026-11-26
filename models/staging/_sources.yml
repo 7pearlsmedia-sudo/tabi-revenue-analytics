@@ -1,0 +1,32 @@
+version: 2
+
+sources:
+  - name: online_retail
+    description: >
+      UCI Online Retail II (Chen, 2012, CC BY 4.0, doi:10.24432/C5CG6D).
+      All transactions of a UK-based, registered non-store online retailer of
+      giftware between 2009-12-01 and 2011-12-09. Landed by scripts/ingest.py
+      as untyped (all-text) Parquet — one file per worksheet.
+    schema: "{{ env_var('RAW_SCHEMA', 'raw') }}"
+    tables:
+      - name: invoice_lines
+        description: One row per invoice line, as exported from the source workbook.
+        config:
+          meta:
+            # dbt-duckdb reads the Parquet files in place; ignored on BigQuery,
+            # where the table <RAW_SCHEMA>.invoice_lines is loaded with `bq load`.
+            external_location: "read_parquet('data/raw/online_retail_*.parquet', union_by_name = true)"
+        columns:
+          - name: Invoice
+            description: 6-digit invoice number. Prefix 'C' = cancellation, 'A' = bad-debt adjustment.
+          - name: StockCode
+            description: 5-digit product code (sometimes with a letter suffix) or a non-product code.
+          - name: Description
+          - name: Quantity
+          - name: InvoiceDate
+          - name: Price
+            description: Unit price in GBP (pounds sterling).
+          - name: Customer ID
+          - name: Country
+          - name: _source_sheet
+            description: Worksheet the row came from (added during ingestion).

@@ -1,0 +1,27 @@
+# data (downloaded by scripts/ingest.py — never committed)
+data/raw/
+*.duckdb
+*.duckdb.wal
+
+# dbt
+target/
+dbt_packages/
+logs/
+.user.yml
+
+# python
+.venv/
+__pycache__/
+*.pyc
+
+# node / dashboard
+node_modules/
+dashboard/dist/
+.vercel/
+
+# os / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.claude/

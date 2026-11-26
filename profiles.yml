@@ -1,0 +1,21 @@
+# dbt looks for profiles.yml in the project directory first, so this file
+# works out of the box. No secrets live here: BigQuery reads env vars.
+tabi_revenue_analytics:
+  target: dev
+  outputs:
+    # Default: free, local, zero-config warehouse (also used in CI).
+    dev:
+      type: duckdb
+      path: "{{ env_var('DUCKDB_PATH', 'warehouse.duckdb') }}"
+      threads: 4
+
+    # Optional: Google BigQuery (OAuth via `gcloud auth application-default login`).
+    # Load the raw parquet files first — see README "Running on BigQuery".
+    bigquery:
+      type: bigquery
+      method: oauth
+      project: "{{ env_var('BQ_PROJECT', 'set-BQ_PROJECT') }}"
+      dataset: "{{ env_var('BQ_DATASET', 'tabi_revenue_analytics') }}"
+      location: "{{ env_var('BQ_LOCATION', 'EU') }}"
+      threads: 4
+      job_execution_timeout_seconds: 600

@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Revenue Analytics · Tabi Labs</title>
+  <meta name="description" content="Decision support and revenue analytics on the public UCI Online Retail II dataset: RFM segmentation, cohort retention, market and product performance, and a backtested sales forecast. A Tabi Labs internal engineering demo.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="masthead">
+    <div class="wrap">
+      <p class="eyebrow">Tabi Labs · Internal Engineering</p>
+      <h1>Decision Support &amp; Revenue Analytics</h1>
+      <p class="dek">Two years of transactions from a UK online giftware retailer, turned into the questions a commercial team actually asks: who are our best customers, do new customers come back, which markets and products carry the business, and what should we expect next quarter?</p>
+      <p class="notice"><strong>Public dataset, not a client project.</strong> Built on <a href="https://doi.org/10.24432/C5CG6D">UCI Online Retail II</a> (CC BY 4.0). Every figure below is computed from that data by the open-source pipeline in <a href="https://github.com/7pearlsmedia-sudo/tabi-revenue-analytics">this repository</a>. Amounts are in GBP, 1 Dec 2009 – 9 Dec 2011.</p>
+    </div>
+  </header>
+
+  <nav class="toc" aria-label="Sections">
+    <div class="wrap">
+      <a href="#overview">Overview</a>
+      <a href="#forecast">Forecast</a>
+      <a href="#customers">Customers</a>
+      <a href="#retention">Retention</a>
+      <a href="#markets">Markets</a>
+      <a href="#products">Products</a>
+      <a href="#data">Data &amp; method</a>
+    </div>
+  </nav>
+
+  <main class="wrap">
+    <section id="overview">
+      <div class="kpis" id="kpis"></div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Net revenue by month</h2>
+          <p class="sub">Product sales minus cancellations. Complete months only (Dec 2009 – Nov 2011).</p>
+        </div>
+        <div class="chart" id="chart-monthly"></div>
+        <p class="takeaway" id="takeaway-monthly"></p>
+      </div>
+    </section>
+
+    <section id="forecast">
+      <div class="section-head">
+        <h2>Weekly forecast, evaluated honestly</h2>
+        <p class="sub">The last <span data-meta="holdout"></span> complete weeks were hidden from every method; the shaded band shows how each one did on data it never saw. The same method is then projected <span data-meta="horizon"></span> weeks past the end of the data.</p>
+      </div>
+      <div class="panel">
+        <div class="filters">
+          <label for="method-select">Method</label>
+          <select id="method-select"></select>
+        </div>
+        <div class="chart" id="chart-forecast"></div>
+        <div class="legend" id="legend-forecast"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Holdout error by method</h3>
+          <p class="sub">WAPE = total absolute error ÷ total actual revenue. Bias &gt; 0 means over-forecasting.</p>
+        </div>
+        <div class="table-wrap"><table id="table-accuracy"></table></div>
+        <p class="takeaway" id="takeaway-forecast"></p>
+      </div>
+    </section>
+
+    <section id="customers">
+      <div class="section-head">
+        <h2>Customers: RFM segmentation</h2>
+        <p class="sub">Each identified customer is scored 1–5 on Recency, Frequency and Monetary value (quintiles), as of 10 Dec 2011, and placed in a segment.</p>
+      </div>
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Share of customers vs share of revenue</h3>
+          </div>
+          <div class="chart" id="chart-rfm"></div>
+          <div class="legend" id="legend-rfm"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Customers by Recency × Frequency/Monetary score</h3>
+            <p class="sub">Darker = more customers. Hover a cell for its segment.</p>
+          </div>
+          <div class="chart" id="chart-rfm-grid"></div>
+        </div>
+      </div>
+      <p class="takeaway" id="takeaway-rfm"></p>
+    </section>
+
+    <section id="retention">
+      <div class="section-head">
+        <h2>Cohort retention</h2>
+        <p class="sub">Share of each month's new customers who ordered again N months later. The Dec 2009 cohort is left out of the chart: it also contains customers who bought before the data starts, so it would overstate retention.</p>
+      </div>
+      <div class="panel">
+        <div class="chart scroll-x" id="chart-cohort"></div>
+        <p class="takeaway" id="takeaway-cohort"></p>
+      </div>
+    </section>
+
+    <section id="markets">
+      <div class="section-head">
+        <h2>Markets</h2>
+        <p class="sub">Net revenue by country. FY1 = Dec 2009–Nov 2010, FY2 = Dec 2010–Nov 2011.</p>
+      </div>
+      <div class="panel">
+        <div class="filters">
+          <label for="region-select">Region</label>
+          <select id="region-select"></select>
+        </div>
+        <div class="chart" id="chart-countries"></div>
+        <div class="table-wrap"><table id="table-countries"></table></div>
+        <p class="takeaway" id="takeaway-markets"></p>
+      </div>
+    </section>
+
+    <section id="products">
+      <div class="section-head">
+        <h2>Products</h2>
+        <p class="sub">Concentration of revenue across the catalogue, the best sellers, and the products most affected by cancellations.</p>
+      </div>
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Cumulative share of net revenue</h3>
+            <p class="sub">Products ranked by net revenue.</p>
+          </div>
+          <div class="chart" id="chart-pareto"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Top 15 products by net revenue</h3>
+          </div>
+          <div class="chart" id="chart-top-products"></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Highest cancellation rates (products with ≥ £20k gross sales)</h3>
+        </div>
+        <div class="table-wrap"><table id="table-returns"></table></div>
+      </div>
+      <p class="takeaway" id="takeaway-products"></p>
+    </section>
+
+    <section id="data">
+      <div class="section-head">
+        <h2>Data &amp; method</h2>
+        <p class="sub">Every cleaning rule is a tested dbt model. This is the audit trail from raw lines to the numbers above.</p>
+      </div>
+      <div class="panel">
+        <div class="table-wrap"><table id="table-quality"></table></div>
+      </div>
+      <div class="method">
+        <p><strong>What “revenue” means here.</strong> Net revenue = product sales − product cancellations, at the prices on the invoice. Postage, marketplace fees, bank charges, manual adjustments, vouchers and test lines are excluded. The dataset has no cost data, so no margin is shown.</p>
+        <p><strong>Pipeline.</strong> Python ingestion → DuckDB → dbt (staging → intermediate → marts, 85 tests) → pre-aggregated JSON → this static page. The dbt models use cross-database macros and ship with an optional BigQuery profile; CI runs them on DuckDB.</p>
+        <p><strong>Attribution.</strong> Chen, D. (2012). <em>Online Retail II</em> [Dataset]. UCI Machine Learning Repository. <a href="https://doi.org/10.24432/C5CG6D">doi:10.24432/C5CG6D</a>. Licensed under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Aggregated and transformed; no individual records are published.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <p>A <a href="https://tabidigitalsolutions.com">Tabi Digital Solutions</a> · Tabi Labs internal engineering demo. Code: <a href="https://github.com/7pearlsmedia-sudo/tabi-revenue-analytics">github.com/7pearlsmedia-sudo/tabi-revenue-analytics</a> (MIT).</p>
+    </div>
+  </footer>
+
+  <script src="vendor/d3.min.js"></script>
+  <script src="vendor/plot.umd.min.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

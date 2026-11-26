@@ -1,0 +1,26 @@
+{
+  "dataset": "UCI Online Retail II (Chen, 2012), CC BY 4.0, doi:10.24432/C5CG6D",
+  "currency": "GBP",
+  "coverage": {
+    "first_date": "2009-12-01",
+    "last_date": "2011-12-09",
+    "snapshot_date": "2011-12-10",
+    "first_complete_week": "2009-12-07",
+    "last_complete_week": "2011-11-28",
+    "first_month": "2009-12-01",
+    "last_complete_month": "2011-11-01"
+  },
+  "totals": {
+    "gross_sales_gbp": 19643861.554048,
+    "returns_gbp": 716425.95462,
+    "net_revenue_gbp": 18927435.599428,
+    "orders": 39516,
+    "customers": 5875,
+    "products": 4908,
+    "countries": 43
+  },
+  "forecast": {
+    "holdout_weeks": 12,
+    "horizon_weeks": 12
+  }
+}

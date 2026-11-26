@@ -1,0 +1,48 @@
+version: 2
+
+models:
+  - name: int_merchandise_lines
+    description: >
+      Product sale and cancellation lines with a positive price - the single
+      basis for all revenue metrics. Sales add to gross_sales_gbp, cancellations
+      to returns_gbp; net_amount_gbp = gross - returns.
+    columns:
+      - name: invoice_line_id
+        data_tests: [unique, not_null]
+      - name: line_type
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [sale, cancellation]
+      - name: gross_sales_gbp
+        data_tests: [not_null]
+      - name: returns_gbp
+        data_tests: [not_null]
+      - name: net_amount_gbp
+        data_tests: [not_null]
+      - name: invoice_month
+        data_tests: [not_null]
+      - name: invoice_week
+        description: Monday of the ISO week.
+        data_tests: [not_null]
+      - name: region
+        data_tests: [not_null]
+
+  - name: int_invoices
+    description: One row per sales invoice (order). Cancellation invoices are excluded.
+    columns:
+      - name: invoice_id
+        data_tests: [unique, not_null]
+      - name: order_value_gbp
+        data_tests: [not_null]
+
+  - name: int_calendar_bounds
+    description: Single-row table with data coverage dates and the complete-period boundaries.
+    columns:
+      - name: snapshot_date
+        description: Day after the last transaction; the "as of" date for recency.
+        data_tests: [not_null]
+      - name: last_complete_week
+        data_tests: [not_null]
+      - name: last_complete_month
+        data_tests: [not_null]

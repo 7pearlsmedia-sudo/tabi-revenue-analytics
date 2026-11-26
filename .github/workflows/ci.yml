@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Ingest, dbt build & export
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      DUCKDB_PATH: warehouse.duckdb
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Install pinned environment (Python from .python-version, deps from uv.lock)
+        run: uv sync --frozen
+
+      - name: Cache raw dataset
+        uses: actions/cache@v4
+        with:
+          path: data/raw
+          key: online-retail-ii-${{ hashFiles('scripts/ingest.py') }}
+
+      - name: Ingest UCI Online Retail II
+        run: uv run python scripts/ingest.py
+
+      - name: dbt parse
+        run: uv run dbt parse
+
+      - name: dbt build (seeds, models and all tests)
+        run: uv run dbt build --fail-fast
+
+      - name: dbt docs generate
+        run: uv run dbt docs generate
+
+      - name: Export dashboard data
+        run: uv run python scripts/export_dashboard.py
+
+      - name: Check committed dashboard data is reproducible
+        # Compares the freshly exported JSON with the committed copy.
+        run: uv run python scripts/check_dashboard_data.py
+
+      - name: Upload dbt docs and dashboard data
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: |
+            target/index.html
+            target/manifest.json
+            target/catalog.json
+            dashboard/data/
+          retention-days: 14

@@ -1,0 +1,51 @@
+version: 2
+
+models:
+  - name: stg_online_retail__invoice_lines
+    description: >
+      Typed, de-duplicated invoice lines from both worksheets, classified by
+      line_type and is_merchandise. No rows are filtered here except the
+      worksheet overlap and exact duplicates.
+    columns:
+      - name: invoice_line_id
+        description: Surrogate key (hash of all source fields).
+        data_tests: [unique, not_null]
+      - name: invoice_id
+        description: Source invoice number, including the C/A prefix.
+        data_tests: [not_null]
+      - name: stock_code
+        data_tests: [not_null]
+      - name: description
+      - name: quantity
+        data_tests: [not_null]
+      - name: unit_price_gbp
+        description: Unit price in GBP.
+        data_tests: [not_null]
+      - name: line_amount_gbp
+        description: quantity x unit price (negative for cancellations).
+      - name: invoiced_at
+        data_tests: [not_null]
+      - name: invoice_date
+      - name: customer_id
+        description: Customer number; null for guest / unidentified orders.
+      - name: country
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('country_regions')
+                field: country
+      - name: line_type
+        description: >
+          sale | cancellation (invoice prefix C) | bad_debt_adjustment (prefix A)
+          | stock_adjustment (non-cancellation line with quantity <= 0 or price <= 0).
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [sale, cancellation, bad_debt_adjustment, stock_adjustment]
+      - name: is_merchandise
+        description: False for postage, fees, adjustments, vouchers, tests (seed non_merchandise_codes).
+        data_tests: [not_null]
+      - name: non_merchandise_category
+      - name: source_sheet
