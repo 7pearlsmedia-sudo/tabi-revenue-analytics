@@ -5,6 +5,8 @@
 [![CI](https://github.com/7pearlsmedia-sudo/tabi-revenue-analytics/actions/workflows/ci.yml/badge.svg)](https://github.com/7pearlsmedia-sudo/tabi-revenue-analytics/actions/workflows/ci.yml)
 &nbsp;Code: MIT · Data: [CC BY 4.0](DATA_ATTRIBUTION.md)
 
+**Live dashboard:** https://7pearlsmedia-sudo.github.io/tabi-revenue-analytics/
+
 > **This is not a client project.** It is an internal engineering demo built on a
 > public dataset, [UCI Online Retail II](https://doi.org/10.24432/C5CG6D)
 > (Chen, 2012, CC BY 4.0). The retailer in the data is not a Tabi client. Every
